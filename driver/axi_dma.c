@@ -10,6 +10,7 @@
  **/
 
 // Kernel dependencies
+#include <linux/version.h>
 #include <linux/of_address.h>       // Module init and exit macros
 #include <linux/module.h>           // Module init and exit macros
 #include <linux/moduleparam.h>      // Module param macro
@@ -76,7 +77,11 @@ free_axidma_dev:
     return -ENOSYS;
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 11, 0)
+static int axidma_remove(struct platform_device *pdev)
+#else
 static void axidma_remove(struct platform_device *pdev)
+#endif
 {
     struct axidma_device *axidma_dev;
 
@@ -91,7 +96,9 @@ static void axidma_remove(struct platform_device *pdev)
 
     // Free the device structure
     kfree(axidma_dev);
-    return;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 11, 0)
+    return 0;
+#endif
 }
 
 static const struct of_device_id axidma_compatible_of_ids[] = {
